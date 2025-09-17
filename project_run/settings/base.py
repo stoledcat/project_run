@@ -114,3 +114,7 @@ STATIC_ROOT = 'static'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+COMPANY_NAME = '5 ростовских вёрст'
+SLOGAN = 'Суббота, утро, парк'
+CONTACTS = 'г.Ростов-на-Дону, ул. Береговая 10'
