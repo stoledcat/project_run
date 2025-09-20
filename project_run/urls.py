@@ -23,8 +23,8 @@ from rest_framework.routers import DefaultRouter
 from app_run.views import RunViewSet, UserViewSet, company_details
 
 router = DefaultRouter()
-router.register("runs", RunViewSet)
 
+router.register("runs", RunViewSet)
 router.register("users", UserViewSet)
 
 urlpatterns = [
