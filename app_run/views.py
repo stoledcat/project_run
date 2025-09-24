@@ -30,7 +30,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [SearchFilter]
-    search_fields = ["first_name", 'last_name']
+    search_fields = ["first_name", "last_name"]
 
     def get_queryset(self):
         qs = self.queryset
