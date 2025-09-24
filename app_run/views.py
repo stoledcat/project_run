@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Run
-from .serializers import RunSerializer, UserSerializer
+from .serializers import RunSerializer, UserSerializer, AthleteDataSerializer
 
 
 # Create your views here.
@@ -35,9 +35,9 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
         is_staff = self.request.query_params.get("type")
 
-        if is_staff == 'coach':
+        if is_staff == "coach":
             qs = qs.filter(is_staff=True)
-        elif is_staff == 'athlete':
+        elif is_staff == "athlete":
             qs = qs.filter(is_staff=False)
         else:
             pass
