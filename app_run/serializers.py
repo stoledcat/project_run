@@ -19,8 +19,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AthleteDataSerializer(serializers.ModelSerializer):
-    # type = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = ["id", "username", "last_name", "first_name"]

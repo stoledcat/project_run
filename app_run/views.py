@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Run
-from .serializers import RunSerializer, UserSerializer, AthleteDataSerializer
+from .serializers import AthleteDataSerializer, RunSerializer, UserSerializer
 
 
 # Create your views here.
@@ -28,7 +28,6 @@ class RunViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # serializer_class = AthleteDataSerializer
 
     def get_queryset(self):
         qs = self.queryset
