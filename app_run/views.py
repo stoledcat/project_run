@@ -28,6 +28,7 @@ class RunViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    # serializer_class = AthleteDataSerializer
 
     def get_queryset(self):
         qs = self.queryset

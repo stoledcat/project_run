@@ -19,13 +19,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AthleteDataSerializer(serializers.ModelSerializer):
+    # type = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username", "last_name", "first_name", "athlete_data"]
+        fields = ["id", "username", "last_name", "first_name"]
+
+    def get_type(self, obj):
+        return obj.is_staff
 
 
 class RunSerializer(serializers.ModelSerializer):
-    athlete_data = UserSerializer(source='athlete', read_only=True)
+    athlete_data = AthleteDataSerializer(source="athlete", read_only=True)
 
     class Meta:
         model = Run
