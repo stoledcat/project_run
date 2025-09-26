@@ -32,12 +32,14 @@ class RunStartAPIView(APIView):
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
 
-        if run.status != "in_progress":
+        if run.status == "init":
             run.status = "in_progress"
             run.save()
             return Response({"status": "in_progress"}, status=status.HTTP_200_OK)
+        elif run.status == "in_progress":
+            return Response({"status": "already in progress"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response("Тренировка уже запущена", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RunStopAPIView(APIView):
@@ -48,8 +50,10 @@ class RunStopAPIView(APIView):
             run.status = "finished"
             run.save()
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
+        elif run.status == "init":
+            return Response({"status": "not started"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response("Тренировка не запущена", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
