@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.shortcuts import get_list_or_404
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from .models import Run
-from .serializers import AthleteDataSerializer, RunSerializer, UserSerializer
+from .serializers import RunSerializer, UserSerializer
 
 
 # Create your views here.
@@ -24,6 +25,14 @@ def company_details(request):
 class RunViewSet(viewsets.ModelViewSet):
     queryset = Run.objects.select_related("athlete").all()
     serializer_class = RunSerializer
+
+    def start_run(self, request, pk=None):
+        run_id = Run.objects.get("id")
+        status_run = Run.objects.get("status")
+        run = get_list_or_404(Run, id=run_id)
+        if status_run != "init":
+            return Response(status=status.HTTP_400)
+
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
