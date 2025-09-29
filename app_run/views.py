@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -23,9 +25,20 @@ def company_details(request):
     return Response(details)
 
 
+class RunPagination(PageNumberPagination):
+    page_size = 5
+    page_query_param = "size"
+    max_page_size = 20
+
+
 class RunViewSet(viewsets.ModelViewSet):
     queryset = Run.objects.select_related("athlete").all()
     serializer_class = RunSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["status", "athlete", "created_at"]
+    ordering_fields = ["created_at"]
+    ordering = ["id"]
+    pagination_class = RunPagination
 
 
 class RunStartAPIView(APIView):
@@ -37,9 +50,13 @@ class RunStartAPIView(APIView):
             run.save()
             return Response({"status": "in_progress"}, status=status.HTTP_200_OK)
         elif run.status == "in_progress":
-            return Response({"status": "already in progress"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "already in progress"}, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
-            return Response({"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class RunStopAPIView(APIView):
@@ -51,16 +68,28 @@ class RunStopAPIView(APIView):
             run.save()
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
         elif run.status == "init":
-            return Response({"status": "not started"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "not started"}, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
-            return Response({"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class UserPagination(PageNumberPagination):
+    page_size = 2
+    page_query_param = "size"
+    max_page_size = 20
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    filter_backends = [SearchFilter]
+    filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["first_name", "last_name"]
+    ordering_fields = ["date_joined"]
+    pagination_class = UserPagination
 
     def get_queryset(self):
         qs = self.queryset
