@@ -39,6 +39,11 @@ class RunViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status", "athlete", "created_at"]
     ordering_fields = ["created_at"]
     ordering = ["id"]
+
+    def paginate_queryset(self, queryset):
+        if "size" in self.request.query_params:
+            return super().paginate_queryset(queryset)
+        
     pagination_class = RunPagination
 
 
@@ -91,12 +96,11 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["first_name", "last_name"]
     ordering_fields = ["date_joined"]
-    
+
     def paginate_queryset(self, queryset):
         if "size" in self.request.query_params:
             return super().paginate_queryset(queryset)
-        # return None
-    
+
     pagination_class = UserPagination
 
     def get_queryset(self):
