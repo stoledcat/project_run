@@ -95,9 +95,9 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def paginate_queryset(self, queryset):
         if "size" in self.request.query_params:
             return super().paginate_queryset(queryset)
-        return None
+        # return None
     
-    # pagination_class = UserPagination
+    pagination_class = UserPagination
 
     def get_queryset(self):
         qs = self.queryset
