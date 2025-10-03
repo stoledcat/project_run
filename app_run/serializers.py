@@ -25,19 +25,16 @@ class UserSerializer(serializers.ModelSerializer):
         else:
             return "athlete"
 
-    def get_is_finished(self, obj):
-        return obj.filter(status="finished").count()
 
-
-class AthleteFinishedSerializer(serializers.ModelSerializer):
-    is_finished = serializers.SerializerMethodField()
+class UserFinishedSerializer(serializers.ModelSerializer):
+    runs_finished = serializers.SerializerMethodField()
 
     class Meta:
-        model = Run
-        fields = ["status", "is_finished"]
+        model = User
+        fields = ["id", "username", "runs_finished"]
 
-    def get_is_finished(self, obj):
-        return obj.status == "finished"
+    def get_runs_finished(self, obj):
+        return obj.run_set.filter(status="finished").count()
 
 
 class AthleteDataSerializer(serializers.ModelSerializer):

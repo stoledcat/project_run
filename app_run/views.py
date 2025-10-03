@@ -10,10 +10,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Run
-from .serializers import AthleteFinishedSerializer, RunSerializer, UserSerializer
+from .serializers import RunSerializer, UserSerializer
 
 
 # Create your views here.
+@property
+def runs_finished(self):
+    return self.run_set.filter(status="finished").count()
+
+User.add_to_class("runs_finished", runs_finished)
+
 @api_view(["GET"])
 def company_details(request):
     details = {
@@ -102,9 +108,6 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             return super().paginate_queryset(queryset)
 
     pagination_class = UserPagination
-    # runs_finished = AthleteFinishedSerializer
-    # total_runs = Run.objects.count()
-    # finished_runs = Run.objects.filter(status='finished').count()
 
     def get_queryset(self):
         qs = self.queryset
