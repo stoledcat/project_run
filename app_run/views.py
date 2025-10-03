@@ -103,8 +103,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
     pagination_class = UserPagination
     # runs_finished = AthleteFinishedSerializer
-    total_runs = Run.objects.count()
-    finished_runs = Run.objects.filter(status='finished').count()
+    # total_runs = Run.objects.count()
+    # finished_runs = Run.objects.filter(status='finished').count()
 
     def get_queryset(self):
         qs = self.queryset
