@@ -18,6 +18,17 @@ class UserSerializer(serializers.ModelSerializer):
             return "athlete"
 
 
+class AthleteFinishedSerializer(serializers.ModelSerializer):
+    is_finished = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Run
+        fields = ["status", "is_finished"]
+
+    def get_is_finished(self, obj):
+        return obj.status == "finished"
+
+
 class AthleteDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
