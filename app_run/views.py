@@ -18,7 +18,9 @@ from .serializers import RunSerializer, UserSerializer
 def runs_finished(self):
     return self.run_set.filter(status="finished").count()
 
+
 User.add_to_class("runs_finished", runs_finished)
+
 
 @api_view(["GET"])
 def company_details(request):
@@ -32,6 +34,11 @@ def company_details(request):
 
 
 class RunPagination(PageNumberPagination):
+    page_query_param = "page"
+    page_size_query_param = "size"
+
+
+class UserPagination(PageNumberPagination):
     page_query_param = "page"
     page_size_query_param = "size"
 
@@ -52,6 +59,10 @@ class RunViewSet(viewsets.ModelViewSet):
 
 
 class RunStartAPIView(APIView):
+    """
+    Класс для запуска забега
+    """
+
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
 
@@ -70,6 +81,10 @@ class RunStartAPIView(APIView):
 
 
 class RunStopAPIView(APIView):
+    """
+    Класс для остановки забега
+    """
+
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
 
@@ -85,11 +100,6 @@ class RunStopAPIView(APIView):
             return Response(
                 {"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST
             )
-
-
-class UserPagination(PageNumberPagination):
-    page_query_param = "page"
-    page_size_query_param = "size"
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
