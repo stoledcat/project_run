@@ -138,11 +138,15 @@ class GetOrCreateAthleteInfo(APIView):
     def get(self, request, id):
         user = get_object_or_404(User, pk=id)
 
+        athlete, created = AthleteInfo.objects.get_or_create(user=user, defaults={"weight": None, "goals": None})
+        return Response({"weight": None, "goals": None, "created": created}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+    def put(self, request, id):
+        user = get_object_or_404(User, pk=id)
+
         weight = request.query_params.get("weight")
         goals = request.query_params.get("goals")
-
-        if weight is None:
-            return Response("Wrong weight: None", status=status.HTTP_400_BAD_REQUEST)
 
         try:
             weight_value = int(weight)
@@ -151,15 +155,6 @@ class GetOrCreateAthleteInfo(APIView):
         
         if weight_value < 0 or weight_value > 900:
             return Response("Неверное значение веса", status=status.HTTP_400_BAD_REQUEST)
-
-        athlete, created = AthleteInfo.objects.get_or_create(user=user, defaults={"weight": weight, "goals": goals})
-        return Response({"weight": athlete.weight, "goals": athlete.goals, "created": created})
-
-    def put(self, request, id):
-        user = get_object_or_404(User, pk=id)
-
-        weight = request.query_params.get("weight")
-        goals = request.query_params.get("goals")
 
         if weight is None:
             return Response("Wrong weight: None", status=status.HTTP_400_BAD_REQUEST)
@@ -173,4 +168,4 @@ class GetOrCreateAthleteInfo(APIView):
             return Response("Неверное значение веса", status=status.HTTP_400_BAD_REQUEST)
 
         athlete, created = AthleteInfo.objects.update_or_create(user=user, defaults={"weight": weight, "goals": goals})
-        return Response({"weight": athlete.weight, "goals": athlete.goals, "created": created})
+        return Response({"weight": athlete.weight, "goals": athlete.goals, "created": created}, status=status.HTTP_201_CREATED)
