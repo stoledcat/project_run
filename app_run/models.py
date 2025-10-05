@@ -14,3 +14,9 @@ class Run(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     comment = models.TextField()
     status = models.CharField(choices=RUN_STATUS_CHOICES, default=INIT)
+
+
+class AthleteInfo(models.Model):
+    weight = models.IntegerField(null=True)
+    goals = models.TextField(null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
