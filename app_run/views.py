@@ -157,7 +157,7 @@ class GetOrCreateAthleteInfo(APIView):
             except ValueError:
                 return Response("Значение веса должно быть числом", status=status.HTTP_400_BAD_REQUEST)
         
-            if not 0 <= weight_value < 900:
+            if not 0 < weight_value < 900:
                 return Response("Неверное значение веса", status=status.HTTP_400_BAD_REQUEST)
         else:
             weight_value = None
