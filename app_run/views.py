@@ -138,7 +138,7 @@ class GetOrCreateAthleteInfo(APIView):
     def get(self, request, id):
         user = get_object_or_404(User, pk=id)
 
-        athlete, created = AthleteInfo.objects.get_or_create(user=user, defaults={"weight": None, "goals": None})
+        athlete, created = AthleteInfo.objects.get_or_create(user=user)
         user_id = user.pk
         goals = getattr(athlete, "goals")
         weight = getattr(athlete, "weight")
