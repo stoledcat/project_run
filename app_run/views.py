@@ -149,7 +149,7 @@ class GetOrCreateAthleteInfo(APIView):
         user = get_object_or_404(User, pk=id)
 
         weight = request.query_params.get("weight")
-        goals = request.data.get("goals")
+        goals = request.query_params.get("goals")
         if weight is not None:
             try:
                 weight_value = int(weight)
@@ -160,4 +160,4 @@ class GetOrCreateAthleteInfo(APIView):
                 return Response("Неверное значение веса", status=status.HTTP_400_BAD_REQUEST)
 
         athlete, created = AthleteInfo.objects.update_or_create(user=user, defaults={"weight": weight, "goals": goals})
-        return Response({"weight": athlete.weight, "goals": athlete.goals, "created": created}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        return Response({"weight": athlete.weight, "goals": athlete.goals}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
