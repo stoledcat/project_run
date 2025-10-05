@@ -169,4 +169,4 @@ class GetOrCreateAthleteInfo(APIView):
             update_fields["goals"] = goals
 
         athlete, created = AthleteInfo.objects.update_or_create(user=user, defaults={"weight": weight_value, "goals": goals})
-        return Response({"weight": athlete.weight, "goals": athlete.goals}, status=status.HTTP_201_CREATED if created else status.HTTP_400_BAD_REQUEST)
+        return Response({"weight": athlete.weight, "goals": athlete.goals}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
