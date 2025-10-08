@@ -91,7 +91,9 @@ class RunStopAPIView(APIView):
         if run.status == "in_progress":
             run.status = "finished"
             run.save()
-            CreateChallenge().check_challenge(run.athlete.pk)
+            CreateChallenge().check_challenge(
+                run.athlete.pk
+            )  # проверка выполнения достижения сразу по завершении забега
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
         elif run.status == "init":
             return Response(
@@ -107,7 +109,20 @@ class CreateChallenge(APIView):
     def check_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
         if user.runs_finished == 10:
-            Challenge.objects.create(full_name="Сделай 10 забегов!", athlete=user)
+            if not Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
+                Challenge.objects.create(full_name="Сделай 10 забегов!", athlete=user)
+
+
+
+class GetChallenges(APIView):
+    def get(self, request, athlete_id=None):
+        athlete_id = request.GET.get("athlete")
+        if athlete_id is not None:
+            challenges = Challenge.objects.filter(athlete_id=athlete_id)
+        else:
+            challenges = Challenge.objects.all()
+        data = [{"full_name": ch.full_name} for ch in challenges]
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
