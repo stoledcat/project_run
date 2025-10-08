@@ -23,5 +23,8 @@ class AthleteInfo(models.Model):
 
 
 class Challenge(models.Model):
-    full_name = models.TextField(null=True)
-    athlete = models.OneToOneField(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=255)
+    athlete = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("athlete", "full_name")
