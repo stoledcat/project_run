@@ -111,7 +111,6 @@ class CreateChallenge(APIView):
             if not Challenge.objects.filter(
                 athlete=user, full_name="Сделай 10 забегов!"
             ).exists():
-                print("ПРОСТО ПРИНТ")
                 Challenge.objects.create(full_name="Сделай 10 забегов!", athlete=user)
 
 
