@@ -21,6 +21,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from app_run.views import (
+    CreateChallenge,
     GetOrCreateAthleteInfo,
     RunViewSet,
     UserViewSet,
@@ -41,4 +42,5 @@ urlpatterns = [
     path("api/runs/<int:run_id>/start/", RunStartAPIView.as_view()),
     path("api/runs/<int:run_id>/stop/", RunStopAPIView.as_view()),
     path("api/athlete_info/<int:id>/", GetOrCreateAthleteInfo.as_view()),
+    path("api/challenges/", CreateChallenge.as_view()),
 ]

@@ -26,15 +26,18 @@ class UserSerializer(serializers.ModelSerializer):
             return "athlete"
 
 
-class UserFinishedSerializer(serializers.ModelSerializer):
-    runs_finished = serializers.SerializerMethodField()
+# class UserFinishedSerializer(serializers.ModelSerializer):
+#     """
+#     Подсчёт завершенных забегов
+#     """
+#     runs_finished = serializers.SerializerMethodField()
 
-    class Meta:
-        model = User
-        fields = ["id", "username", "runs_finished"]
+#     class Meta:
+#         model = User
+#         fields = ["id", "username", "runs_finished"]
 
-    def get_runs_finished(self, obj):
-        return obj.run_set.filter(status="finished").count()
+#     def get_runs_finished(self, obj):
+#         return obj.run_set.filter(status="finished").count()
 
 
 class AthleteDataSerializer(serializers.ModelSerializer):

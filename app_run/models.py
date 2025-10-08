@@ -20,3 +20,8 @@ class AthleteInfo(models.Model):
     weight = models.IntegerField(null=True)
     goals = models.TextField(null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
+class Challenge(models.Model):
+    full_name = models.TextField(null=True)
+    athlete = models.OneToOneField(User, on_delete=models.CASCADE)
