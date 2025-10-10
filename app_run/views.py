@@ -107,9 +107,9 @@ class RunStopAPIView(APIView):
 class CreateChallenge(APIView):
     def check_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
-        if not Challenge.objects.filter(athlete=user, fullname="Сделай 10 забегов!").exists():
+        if not Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
             if user.runs_finished == 10:
-                Challenge.objects.create(athlete=user, fullname="Сделай 10 забегов!")
+                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
 
 
 
