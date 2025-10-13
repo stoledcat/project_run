@@ -108,7 +108,7 @@ class CreateChallenge(APIView):
         user = User.objects.get(pk=athlete_id)
         if user.runs_finished == 10:
             if not Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
-                Challenge.objects.get_or_create(athlete=user, full_name="Сделай 10 забегов!")
+                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
 
 
 
@@ -119,7 +119,7 @@ class GetChallenges(APIView):
             challenges = Challenge.objects.filter(athlete_id=athlete_id)
         else:
             challenges = Challenge.objects.all()
-        data = [{"full_name": ch.full_name} for ch in challenges]
+        data = [{"full_name": ch.full_name, "athlete": ch.athlete_id} for ch in challenges]
         return Response(data, status=status.HTTP_200_OK)
 
 
