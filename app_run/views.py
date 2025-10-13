@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -107,10 +108,11 @@ class RunStopAPIView(APIView):
 class CreateChallenge(APIView):
     def check_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
-        if not Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
-            if user.runs_finished == 10:
-                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
-
+        if user.runs_finished == 10:
+            with transaction.atomic():
+                Challenge.objects.get_or_create(
+                    athlete=user, fullname="Сделай 10 забегов!"
+                )
 
 
 class GetChallenges(APIView):
