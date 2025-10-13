@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -88,7 +87,6 @@ class RunStopAPIView(APIView):
 
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
-
         if run.status == "in_progress":
             run.status = "finished"
             run.save()
@@ -110,7 +108,7 @@ class CreateChallenge(APIView):
         user = User.objects.get(pk=athlete_id)
         if not Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
             if user.runs_finished == 10:
-                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
+                Challenge.objects.get_or_create(athlete=user, full_name="Сделай 10 забегов!")
 
 
 
