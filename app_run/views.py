@@ -111,7 +111,7 @@ class CreateChallenge(APIView):
         if user.runs_finished == 10:
             with transaction.atomic():
                 Challenge.objects.get_or_create(
-                    athlete=user, fullname="Сделай 10 забегов!"
+                    athlete=user, full_name="Сделай 10 забегов!"
                 )
 
 
