@@ -98,8 +98,8 @@ class RunStopAPIView(APIView):
             # Проверка выполнения достижения сразу по завершении забега
             if runs_finished_count == 10:
                 CreateChallenge().write_challenge(run.athlete.pk)
-
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
+
         elif run.status == "init":
             return Response(
                 {"status": "not started"}, status=status.HTTP_400_BAD_REQUEST
@@ -113,18 +113,14 @@ class RunStopAPIView(APIView):
 class CreateChallenge(APIView):
     def write_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
-        exists = Challenge.objects.filter(
+        if Challenge.objects.filter(
             athlete=user, full_name="Сделай 10 забегов!"
-        ).exists()
-        if exists:
+        ).exists():
             return
-
-        finished_runs = user.run_set.filter(status="finished").count()
-        if finished_runs == 10:
-            try:
-                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
-            except IntegrityError:
-                pass
+        try:
+            Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
+        except IntegrityError:
+            pass
 
 
 class GetChallenges(APIView):
