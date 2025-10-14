@@ -113,12 +113,19 @@ class RunStopAPIView(APIView):
 class CreateChallenge(APIView):
     def write_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
-        if Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
+        exists = Challenge.objects.filter(
+            athlete=user, full_name="Сделай 10 забегов!"
+        ).exists()
+        if exists:
             return
-        try:
-            Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
-        except IntegrityError:
-            pass
+
+        finished_runs = user.run_set.filter(status="finished").count()
+        if finished_runs == 10:
+            try:
+                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
+            except IntegrityError:
+                pass
+
 
 class GetChallenges(APIView):
     def get(self, request, athlete_id=None):
