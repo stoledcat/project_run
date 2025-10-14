@@ -91,13 +91,10 @@ class RunStopAPIView(APIView):
             user = run.athlete
             runs_finished_count = user.runs_finished
 
-            challenge_exists = Challenge.objects.filter(
-                athlete=user, full_name="Сделай 10 забегов!"
-            ).exists()
-
-            if runs_finished_count >= 10 and not challenge_exists:
+            if runs_finished_count >= 10:
                 try:
-                    Challenge.objects.create(
+                    # Используем get_or_create для предотвращения дублирования
+                    challenge, created = Challenge.objects.get_or_create(
                         athlete=user, full_name="Сделай 10 забегов!"
                     )
                 except IntegrityError:
@@ -124,18 +121,17 @@ class GetChallenges(APIView):
 
         try:
             if athlete_id:
-                athlete = User.objects.get(pk=athlete_id)
                 challenges = Challenge.objects.filter(athlete_id=athlete_id)
             else:
                 challenges = Challenge.objects.all()
 
-            serializer = ChallengeSerializer(challenges, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            response_data = [
+                {"full_name": challenge.full_name, "athlete": challenge.athlete.id}
+                for challenge in challenges
+            ]
 
-        except User.DoesNotExist:
-            return Response(
-                {"error": "Атлет не найден"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response(response_data, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
