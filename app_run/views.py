@@ -115,8 +115,12 @@ class CreateChallenge(APIView):
         exists = Challenge.objects.filter(
             athlete=user, full_name="Сделай 10 забегов!"
         ).exists()
+
+        if exists:
+            return
+
         if not exists:
-            Challenge.objects.get_or_create(athlete=user, full_name="Сделай 10 забегов!")
+            Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
 
 
 class GetChallenges(APIView):
