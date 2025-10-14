@@ -92,7 +92,7 @@ class RunStopAPIView(APIView):
             run.save()
             user = run.athlete
             runs_finished_count = user.run_set.filter(status="finished").count()
-            print("Количество завершенных забегов:", runs_finished_count)
+            # print("Количество завершенных забегов:", runs_finished_count)
 
             # Проверка выполнения достижения сразу по завершении забега
             if runs_finished_count == 10:
@@ -116,7 +116,7 @@ class CreateChallenge(APIView):
             athlete=user, full_name="Сделай 10 забегов!"
         ).exists()
         if not exists:
-            Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
+            Challenge.objects.get_or_create(athlete=user, full_name="Сделай 10 забегов!")
 
 
 class GetChallenges(APIView):
