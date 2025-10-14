@@ -90,8 +90,14 @@ class RunStopAPIView(APIView):
         if run.status == "in_progress":
             run.status = "finished"
             run.save()
-            # проверка выполнения достижения сразу по завершении забега
-            CreateChallenge().check_challenge(run.athlete.pk)
+            user = run.athlete
+            runs_finished_count = user.run_set.filter(status="finished").count()
+            print("Количество завершенных забегов:", runs_finished_count)
+
+            # Проверка выполнения достижения сразу по завершении забега
+            if runs_finished_count == 10:
+                CreateChallenge().write_challenge(run.athlete.pk)
+
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
         elif run.status == "init":
             return Response(
@@ -104,16 +110,13 @@ class RunStopAPIView(APIView):
 
 
 class CreateChallenge(APIView):
-    def check_challenge(self, athlete_id):
+    def write_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
-        # Вычисляется количество завершённых забегов
-        runs_finished_count = user.run_set.filter(status="finished").count()
-        # Создается челлендж, только если ровно 10 завершённых забегов и челлендж ещё не существует
-        if runs_finished_count == 10:
-            exists = Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists()
-            if not exists:
-                Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
-
+        exists = Challenge.objects.filter(
+            athlete=user, full_name="Сделай 10 забегов!"
+        ).exists()
+        if not exists:
+            Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
 
 
 class GetChallenges(APIView):
@@ -123,7 +126,9 @@ class GetChallenges(APIView):
             challenges = Challenge.objects.filter(athlete_id=athlete_id)
         else:
             challenges = Challenge.objects.all()
-        data = [{"full_name": ch.full_name, "athlete": ch.athlete_id} for ch in challenges]
+        data = [
+            {"full_name": ch.full_name, "athlete": ch.athlete_id} for ch in challenges
+        ]
         return Response(data, status=status.HTTP_200_OK)
 
 
