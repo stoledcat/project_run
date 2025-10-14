@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -10,14 +11,15 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AthleteInfo, Challenge, Run
-from .serializers import RunSerializer, UserSerializer
+from .models import AthleteInfo, Challenge, Run, User
+from .serializers import ChallengeSerializer, RunSerializer, UserSerializer
 
 
 # Добавляем свойство для подсчета завершенных забегов
 @property
 def runs_finished(self):
     return self.run_set.filter(status="finished").count()
+
 
 User.add_to_class("runs_finished", runs_finished)
 
@@ -61,6 +63,7 @@ class RunStartAPIView(APIView):
     """
     Запуск забега
     """
+
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
 
@@ -70,63 +73,66 @@ class RunStartAPIView(APIView):
             return Response({"status": "in_progress"}, status=status.HTTP_200_OK)
         elif run.status == "in_progress":
             return Response(
-                {"status": "already in progress"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"status": "already in progress"}, status=status.HTTP_400_BAD_REQUEST
             )
         else:
             return Response(
-                {"status": "already finished"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST
             )
 
 
 class RunStopAPIView(APIView):
-    """
-    Остановка забега
-    """
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
         if run.status == "in_progress":
             run.status = "finished"
             run.save()
-            
+
             # Подсчет количества завершенных забегов
             user = run.athlete
             runs_finished_count = user.runs_finished
-            
+
             # Создание челленджа при достижении цели
             if runs_finished_count >= 10:
-                challenge_data = {
-                    "athlete": user,
-                    "full_name": "Сделай 10 забегов!",
-                }
-                Challenge.objects.create(**challenge_data)
-                
+                Challenge.objects.get_or_create(
+                    athlete=user, full_name="Сделай 10 забегов!"
+                )
+
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
-        
-        elif run.status == "init":
-            return Response(
-                {"status": "not started"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        else:
-            return Response(
-                {"status": "already finished"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class GetChallenges(APIView):
     """
     Получение списка выполненных челленджей
     """
+
     def get(self, request):
-        athlete_id = request.GET.get('athlete')
+        athlete_id = request.GET.get("athlete")
+
         if athlete_id:
-            challenges = Challenge.objects.filter(athlete_id=athlete_id).values('full_name', 'athlete')
+            try:
+                athlete = User.objects.get(pk=athlete_id)
+                # Проверяем количество завершенных забегов
+                runs_count = Run.objects.filter(
+                    athlete=athlete, status="finished"
+                ).count()
+
+                if runs_count >= 10:
+                    # Создаем челлендж, если его еще нет
+                    Challenge.objects.get_or_create(
+                        athlete=athlete, full_name="Сделай 10 забегов!"
+                    )
+
+                challenges = Challenge.objects.filter(athlete=athlete)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "Атлет не найден"}, status=status.HTTP_404_NOT_FOUND
+                )
         else:
-            challenges = Challenge.objects.values('full_name', 'athlete')
-        return Response(challenges, status=status.HTTP_200_OK)
+            challenges = Challenge.objects.all()
+
+        serializer = ChallengeSerializer(challenges, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -161,6 +167,7 @@ class GetOrCreateAthleteInfo(APIView):
     """
     Работа с информацией об атлете
     """
+
     def get(self, request, id):
         user = get_object_or_404(User, pk=id)
         athlete, _ = AthleteInfo.objects.get_or_create(user=user)
@@ -182,27 +189,26 @@ class GetOrCreateAthleteInfo(APIView):
             except ValueError:
                 return Response(
                     "Вес должен быть числовым значением",
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             if not 0 < weight_value < 900:
                 return Response(
-                    "Некорректное значение веса",
-                    status=status.HTTP_400_BAD_REQUEST
+                    "Некорректное значение веса", status=status.HTTP_400_BAD_REQUEST
                 )
         else:
             weight_value = None
 
         update_fields = {}
         if weight_value is not None:
-            update_fields['weight'] = weight_value
+            update_fields["weight"] = weight_value
         if goals is not None:
-            update_fields['goals'] = goals
+            update_fields["goals"] = goals
 
         athlete, created = AthleteInfo.objects.update_or_create(
             user=user, defaults=update_fields
         )
-        return Response({
-            "weight": athlete.weight,
-            "goals": athlete.goals
-        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        return Response(
+            {"weight": athlete.weight, "goals": athlete.goals},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
