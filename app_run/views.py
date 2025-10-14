@@ -97,7 +97,7 @@ class RunStopAPIView(APIView):
             # Создание челленджа при достижении цели
             if runs_finished_count >= 10:
                 challenge_data = {
-                    "athlete": user.id,
+                    "athlete": user,
                     "full_name": "Сделай 10 забегов!",
                 }
                 Challenge.objects.create(**challenge_data)
