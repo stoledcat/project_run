@@ -92,13 +92,27 @@ class RunStopAPIView(APIView):
             user = run.athlete
             runs_finished_count = user.runs_finished
 
-            # Создание челленджа при достижении цели
             if runs_finished_count >= 10:
-                Challenge.objects.get_or_create(
-                    athlete=user, full_name="Сделай 10 забегов!"
-                )
+                try:
+                    challenge, created = Challenge.objects.get_or_create(
+                        athlete=user, full_name="Сделай 10 забегов!"
+                    )
+                except IntegrityError:
+                    return Response(
+                        {"error": "Ошибка создания челленджа"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
 
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
+
+        elif run.status == "init":
+            return Response(
+                {"status": "not started"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            return Response(
+                {"status": "already finished"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class GetChallenges(APIView):
@@ -109,30 +123,31 @@ class GetChallenges(APIView):
     def get(self, request):
         athlete_id = request.GET.get("athlete")
 
-        if athlete_id:
-            try:
+        try:
+            if athlete_id:
                 athlete = User.objects.get(pk=athlete_id)
-                # Проверяем количество завершенных забегов
-                runs_count = Run.objects.filter(
-                    athlete=athlete, status="finished"
-                ).count()
+                runs_count = athlete.runs_finished
 
                 if runs_count >= 10:
-                    # Создаем челлендж, если его еще нет
-                    Challenge.objects.create(
+                    Challenge.objects.get_or_create(
                         athlete=athlete, full_name="Сделай 10 забегов!"
                     )
 
-                challenges = Challenge.objects.filter(athlete=athlete)
-            except User.DoesNotExist:
-                return Response(
-                    {"error": "Атлет не найден"}, status=status.HTTP_404_NOT_FOUND
-                )
-        else:
-            challenges = Challenge.objects.all()
+                challenges = Challenge.objects.filter(athlete_id=athlete_id)
+            else:
+                challenges = Challenge.objects.all()
 
-        serializer = ChallengeSerializer(challenges, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = ChallengeSerializer(challenges, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Атлет не найден"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
