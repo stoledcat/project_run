@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -112,16 +113,12 @@ class RunStopAPIView(APIView):
 class CreateChallenge(APIView):
     def write_challenge(self, athlete_id):
         user = User.objects.get(pk=athlete_id)
-        exists = Challenge.objects.filter(
-            athlete=user, full_name="Сделай 10 забегов!"
-        ).exists()
-
-        if exists:
+        if Challenge.objects.filter(athlete=user, full_name="Сделай 10 забегов!").exists():
             return
-
-        if not exists:
+        try:
             Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
-
+        except IntegrityError:
+            pass
 
 class GetChallenges(APIView):
     def get(self, request, athlete_id=None):
