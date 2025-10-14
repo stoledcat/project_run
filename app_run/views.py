@@ -10,17 +10,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AthleteInfo, Challenge, Run
+from .models import Athlete, Challenge, Run
 from .serializers import RunSerializer, UserSerializer
-
-
-# Create your views here.
-@property
-def runs_finished(self):
-    return self.run_set.filter(status="finished").count()
-
-
-User.add_to_class("runs_finished", runs_finished)
 
 
 @api_view(["GET"])
@@ -30,7 +21,6 @@ def company_details(request):
         "slogan": settings.SLOGAN,
         "contacts": settings.CONTACTS,
     }
-
     return Response(details)
 
 
@@ -92,12 +82,12 @@ class RunStopAPIView(APIView):
             run.status = "finished"
             run.save()
             user = run.athlete
-            runs_finished_count = user.run_set.filter(status="finished").count()
-            # print("Количество завершенных забегов:", runs_finished_count)
+            user.completed_runs += 1
+            user.save(update_fields=["completed_runs"])
 
-            # Проверка выполнения достижения сразу по завершении забега
-            if runs_finished_count == 10:
-                CreateChallenge().write_challenge(run.athlete.pk)
+            if user.completed_runs >= 10:
+                CreateChallenge().write_challenge(user.id)
+
             return Response({"status": "finished"}, status=status.HTTP_200_OK)
 
         elif run.status == "init":
@@ -112,13 +102,13 @@ class RunStopAPIView(APIView):
 
 class CreateChallenge(APIView):
     def write_challenge(self, athlete_id):
-        user = User.objects.get(pk=athlete_id)
+        athlete = Athlete.objects.get(pk=athlete_id)
         if Challenge.objects.filter(
-            athlete=user, full_name="Сделай 10 забегов!"
+            athlete=athlete, full_name="Сделай 10 забегов!"
         ).exists():
             return
         try:
-            Challenge.objects.create(athlete=user, full_name="Сделай 10 забегов!")
+            Challenge.objects.create(athlete=athlete, full_name="Сделай 10 забегов!")
         except IntegrityError:
             pass
 
@@ -127,11 +117,12 @@ class GetChallenges(APIView):
     def get(self, request, athlete_id=None):
         athlete_id = request.GET.get("athlete")
         if athlete_id is not None:
-            challenges = Challenge.objects.filter(athlete_id=athlete_id)
+            challenges = Challenge.objects.filter(athlete__pk=athlete_id)
         else:
             challenges = Challenge.objects.all()
         data = [
-            {"full_name": ch.full_name, "athlete": ch.athlete_id} for ch in challenges
+            {"full_name": challenge.full_name, "athlete": challenge.athlete.user_id}
+            for challenge in challenges
         ]
         return Response(data, status=status.HTTP_200_OK)
 
@@ -162,57 +153,3 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             pass
         return qs
-
-
-class GetOrCreateAthleteInfo(APIView):
-    """
-    Класс для получения или добавления информации об атлете
-    """
-
-    def get(self, request, id):
-        user = get_object_or_404(User, pk=id)
-
-        athlete, created = AthleteInfo.objects.get_or_create(user=user)
-        user_id = user.pk
-        goals = getattr(athlete, "goals")
-        weight = getattr(athlete, "weight")
-        return Response(
-            {"user_id": user_id, "goals": goals, "weight": weight},
-            status=status.HTTP_200_OK,
-        )
-
-    def put(self, request, id):
-        user = get_object_or_404(User, pk=id)
-
-        weight = request.data.get("weight")
-        goals = request.data.get("goals")
-
-        if weight is not None:
-            try:
-                weight_value = int(weight)
-            except ValueError:
-                return Response(
-                    "Значение веса должно быть числом",
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if not 0 < weight_value < 900:
-                return Response(
-                    "Неверное значение веса", status=status.HTTP_400_BAD_REQUEST
-                )
-        else:
-            weight_value = None
-
-        update_fields = {}
-        if weight_value is not None:
-            update_fields["weight"] = weight_value
-        if goals is not None:
-            update_fields["goals"] = goals
-
-        athlete, created = AthleteInfo.objects.update_or_create(
-            user=user, defaults={"weight": weight_value, "goals": goals}
-        )
-        return Response(
-            {"weight": athlete.weight, "goals": athlete.goals},
-            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
-        )
