@@ -88,13 +88,12 @@ class RunStopAPIView(APIView):
             run.status = "finished"
             run.save()
 
-            # Подсчет количества завершенных забегов
             user = run.athlete
             runs_finished_count = user.runs_finished
 
             if runs_finished_count >= 10:
                 try:
-                    challenge, created = Challenge.objects.get_or_create(
+                    Challenge.objects.get_or_create(
                         athlete=user, full_name="Сделай 10 забегов!"
                     )
                 except IntegrityError:
@@ -116,23 +115,12 @@ class RunStopAPIView(APIView):
 
 
 class GetChallenges(APIView):
-    """
-    Получение списка выполненных челленджей
-    """
-
     def get(self, request):
         athlete_id = request.GET.get("athlete")
 
         try:
             if athlete_id:
                 athlete = User.objects.get(pk=athlete_id)
-                runs_count = athlete.runs_finished
-
-                if runs_count >= 10:
-                    Challenge.objects.get_or_create(
-                        athlete=athlete, full_name="Сделай 10 забегов!"
-                    )
-
                 challenges = Challenge.objects.filter(athlete_id=athlete_id)
             else:
                 challenges = Challenge.objects.all()
