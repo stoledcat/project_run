@@ -91,9 +91,13 @@ class RunStopAPIView(APIView):
             user = run.athlete
             runs_finished_count = user.runs_finished
 
-            if runs_finished_count >= 10:
+            challenge_exists = Challenge.objects.filter(
+                athlete=user, full_name="Сделай 10 забегов!"
+            ).exists()
+
+            if runs_finished_count >= 10 and not challenge_exists:
                 try:
-                    Challenge.objects.get_or_create(
+                    Challenge.objects.create(
                         athlete=user, full_name="Сделай 10 забегов!"
                     )
                 except IntegrityError:
