@@ -119,7 +119,7 @@ class GetChallenges(APIView):
 
                 if runs_count >= 10:
                     # Создаем челлендж, если его еще нет
-                    Challenge.objects.get_or_create(
+                    Challenge.objects.create(
                         athlete=athlete, full_name="Сделай 10 забегов!"
                     )
 
