@@ -23,6 +23,7 @@ from rest_framework.routers import DefaultRouter
 from app_run.views import (
     GetChallenges,
     GetOrCreateAthleteInfo,
+    RunInitAPIView,
     RunViewSet,
     UserViewSet,
     company_details,
@@ -41,6 +42,7 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/runs/<int:run_id>/start/", RunStartAPIView.as_view()),
     path("api/runs/<int:run_id>/stop/", RunStopAPIView.as_view()),
+    path("api/runs/<int:run_id>/init/", RunInitAPIView.as_view()),
     path("api/athlete_info/<int:id>/", GetOrCreateAthleteInfo.as_view()),
     path("api/challenges/", GetChallenges.as_view()),
 ]

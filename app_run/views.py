@@ -95,7 +95,7 @@ class RunStopAPIView(APIView):
                 athlete=user, full_name="Сделай 10 забегов!"
             ).exists()
 
-            if runs_finished_count == 10 and not challenge_exists:
+            if runs_finished_count >= 10 and not challenge_exists:
                 try:
                     Challenge.objects.create(
                         athlete=user, full_name="Сделай 10 забегов!"
@@ -223,3 +223,21 @@ class GetOrCreateAthleteInfo(APIView):
             {"weight": athlete.weight, "goals": athlete.goals},
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
         )
+
+
+class RunInitAPIView(APIView):
+    """
+    Инициализация забегов (для тестов)
+    """
+
+    def post(self, request, run_id):
+        run = get_object_or_404(Run, pk=run_id)
+
+        if run.status != "init":
+            run.status = "init"
+            run.save()
+            return Response({f'"status": Забег {run_id} - "init"'}, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {f'"status": Забег {run_id} "already inited"'}, status=status.HTTP_400_BAD_REQUEST
+            )
