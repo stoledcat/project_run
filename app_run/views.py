@@ -95,7 +95,7 @@ class RunStopAPIView(APIView):
                 athlete=user, full_name="Сделай 10 забегов!"
             ).exists()
 
-            if runs_finished_count >= 10 and not challenge_exists:
+            if runs_finished_count == 10 and not challenge_exists:
                 try:
                     Challenge.objects.create(
                         athlete=user, full_name="Сделай 10 забегов!"
