@@ -15,7 +15,7 @@ from .models import AthleteInfo, Challenge, Run, User
 from .serializers import ChallengeSerializer, RunSerializer, UserSerializer
 
 
-# Добавляем свойство для подсчета завершенных забегов
+# Добавляем свойство для подсчета завершенных Забегов
 @property
 def runs_finished(self):
     return self.run_set.filter(status="finished").count()
@@ -92,13 +92,13 @@ class RunStopAPIView(APIView):
             runs_finished_count = user.runs_finished
 
             challenge_exists = Challenge.objects.filter(
-                athlete=user, full_name="Сделай 10 забегов!"
+                athlete=user, full_name="Сделай 10 Забегов!"
             ).exists()
 
             if runs_finished_count >= 10 and not challenge_exists:
                 try:
                     Challenge.objects.create(
-                        athlete=user, full_name="Сделай 10 забегов!"
+                        athlete=user, full_name="Сделай 10 Забегов!"
                     )
                 except IntegrityError:
                     return Response(
@@ -227,7 +227,7 @@ class GetOrCreateAthleteInfo(APIView):
 
 class RunInitAPIView(APIView):
     """
-    Инициализация забегов (для тестов)
+    Инициализация Забегов (для тестов)
     """
 
     def post(self, request, run_id):
