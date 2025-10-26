@@ -28,3 +28,12 @@ class Challenge(models.Model):
 
     class Meta:
         unique_together = ("athlete", "full_name")
+
+
+class Position(models.Model):
+    run = models.ForeignKey(Run, on_delete=models.CASCADE, null=True, blank=True, related_name="positions")
+    latitude = models.DecimalField(max_digits=7, decimal_places=4, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=8, decimal_places=4, null=True, blank=True)
+
+    def __str__(self):
+        return f"Position {self.id} for Run {self.run.id}"

@@ -23,18 +23,20 @@ from rest_framework.routers import DefaultRouter
 from app_run.views import (
     GetChallenges,
     GetOrCreateAthleteInfo,
+    PositionPostViewSet,
     RunInitAPIView,
+    RunStartAPIView,
+    RunStopAPIView,
     RunViewSet,
     UserViewSet,
     company_details,
-    RunStartAPIView,
-    RunStopAPIView,
 )
 
 router = DefaultRouter()
 
 router.register("runs", RunViewSet)
 router.register("users", UserViewSet)
+router.register("positions", PositionPostViewSet, basename="positions")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

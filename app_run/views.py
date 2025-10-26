@@ -1,18 +1,17 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AthleteInfo, Challenge, Run, User
-from .serializers import ChallengeSerializer, RunSerializer, UserSerializer
+from .models import AthleteInfo, Challenge, Position, Run
+from .serializers import PositionSerializer, RunSerializer, UserSerializer
 
 
 # Добавляем свойство для подсчета завершенных Забегов
@@ -57,6 +56,20 @@ class RunViewSet(viewsets.ModelViewSet):
             return super().paginate_queryset(queryset)
 
     pagination_class = RunPagination
+
+
+class PositionPostViewSet(viewsets.ModelViewSet):
+    serializer_class = PositionSerializer
+    queryset = Position.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["run__id"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        run_id = self.request.query_params.get("run")
+        if run_id is not None:
+            queryset = queryset.filter(run__id=run_id)
+        return queryset
 
 
 class RunStartAPIView(APIView):
@@ -236,8 +249,11 @@ class RunInitAPIView(APIView):
         if run.status != "init":
             run.status = "init"
             run.save()
-            return Response({f'"status": Забег {run_id} - "init"'}, status=status.HTTP_200_OK)
+            return Response(
+                {f'"status": Забег {run_id} - "init"'}, status=status.HTTP_200_OK
+            )
         else:
             return Response(
-                {f'"status": Забег {run_id} "already inited"'}, status=status.HTTP_400_BAD_REQUEST
+                {f'"status": Забег {run_id} "already inited"'},
+                status=status.HTTP_400_BAD_REQUEST,
             )
