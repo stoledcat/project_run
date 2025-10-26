@@ -59,16 +59,17 @@ class PositionSerializer(serializers.ModelSerializer):
         model = Position
         fields = ["id", "run", "latitude", "longitude"]
 
-    def validate(self, data):
-        run = data.get("run")
-        latitude = data.get("latitude")
-        longitude = data.get("longitude")
-
-        if run.status != "in_progress":
+    def validate_run(self, value):
+        if value.status != "in_progress":
             raise serializers.ValidationError("Забег не запущен или остановлен")
+        return value
 
-        if latitude and longitude:
-            if not (-90.0 <= latitude <= 90.0 and -180.0 <= longitude <= 180.0):
-                raise serializers.ValidationError("Указаны некорректные координаты")
+    def validate_latitude(self, value):
+        if not (-90.0 <= value <= 90.0):
+            raise serializers.ValidationError("Недопустимая широта")
+        return value
 
-        return data
+    def validate_longitude(self, value):
+        if (-180.0 <= value <= 180.0):
+            raise serializers.ValidationError("Недопустимая долгота")
+        return value
