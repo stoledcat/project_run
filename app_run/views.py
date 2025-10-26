@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, filters
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination

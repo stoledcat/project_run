@@ -20,17 +20,10 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from app_run.views import (
-    GetChallenges,
-    GetOrCreateAthleteInfo,
-    PositionPostViewSet,
-    RunInitAPIView,
-    RunStartAPIView,
-    RunStopAPIView,
-    RunViewSet,
-    UserViewSet,
-    company_details,
-)
+from app_run.views import (GetChallenges, GetOrCreateAthleteInfo,
+                           PositionPostViewSet, RunInitAPIView,
+                           RunStartAPIView, RunStopAPIView, RunViewSet,
+                           UserViewSet, company_details)
 
 router = DefaultRouter()
 
