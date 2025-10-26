@@ -59,8 +59,8 @@ class RunViewSet(viewsets.ModelViewSet):
 
 
 class PositionPostViewSet(viewsets.ModelViewSet):
-    serializer_class = PositionSerializer
     queryset = Position.objects.all()
+    serializer_class = PositionSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["run__id"]
 
