@@ -1,3 +1,4 @@
+from itertools import pairwise
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -98,10 +99,18 @@ class RunStartAPIView(APIView):
 class RunStopAPIView(APIView):
     def post(self, request, run_id):
         run = get_object_or_404(Run, pk=run_id)
+        total_distance = 0
         if run.status == "in_progress":
-            run.status = "finished"
             # расчет пробега
-            
+            positions = list(Position.objects.filter(run=run_id))
+            for i in range(len(positions) - 1):
+                current_position = positions[i]
+                next_position = positions[i + 1]
+                segment_distance = geodesic((current_position.latitude, current_position.longitude), (next_position.latitude, next_position.longitude)).km
+
+                total_distance += segment_distance
+            run.status = "finished"
+            run.distance = total_distance
             run.save()
 
             user = run.athlete
