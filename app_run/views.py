@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from geopy.distance import geodesic
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -99,6 +100,8 @@ class RunStopAPIView(APIView):
         run = get_object_or_404(Run, pk=run_id)
         if run.status == "in_progress":
             run.status = "finished"
+            # расчет пробега
+            
             run.save()
 
             user = run.athlete
