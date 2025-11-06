@@ -1,4 +1,3 @@
-from itertools import pairwise
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -11,7 +10,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.db.models import Sum
 from .models import AthleteInfo, Challenge, Position, Run
 from .serializers import PositionSerializer, RunSerializer, UserSerializer
 
@@ -21,8 +20,14 @@ from .serializers import PositionSerializer, RunSerializer, UserSerializer
 def runs_finished(self):
     return self.run_set.filter(status="finished").count()
 
+# Добавяляем свойство для подсчета общего пробега
+@property
+def total_distance(self):
+    return self.Run.objects.filter(id=id, status="finished").aggregate(Sum("distance"))
+
 
 User.add_to_class("runs_finished", runs_finished)
+User.add_to_class("total_distance", total_distance)
 
 
 @api_view(["GET"])
@@ -106,7 +111,10 @@ class RunStopAPIView(APIView):
             for i in range(len(positions) - 1):
                 current_position = positions[i]
                 next_position = positions[i + 1]
-                segment_distance = geodesic((current_position.latitude, current_position.longitude), (next_position.latitude, next_position.longitude)).km
+                segment_distance = geodesic(
+                    (current_position.latitude, current_position.longitude),
+                    (next_position.latitude, next_position.longitude),
+                ).km
 
                 total_distance += segment_distance
             run.status = "finished"
@@ -116,11 +124,22 @@ class RunStopAPIView(APIView):
             user = run.athlete
             runs_finished_count = user.runs_finished
 
+            # челлендж 10 забегов
             challenge_exists = Challenge.objects.filter(
                 athlete=user, full_name="Сделай 10 Забегов!"
             ).exists()
 
-            if runs_finished_count >= 10 and not challenge_exists:
+            if total_distance >= 50 and not challenge_exists:
+                try:
+                    Challenge.objects.create(
+                        athlete=user, full_name="Пробеги 50 километров!"
+                    )
+                except IntegrityError:
+                    return Response(
+                        {"error": "Ошибка создания челленджа"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+            if runs_finished_count >= 10 and not challenge_exists and runs_finished_count < 50:
                 try:
                     Challenge.objects.create(
                         athlete=user, full_name="Сделай 10 Забегов!"
