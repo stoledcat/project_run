@@ -60,7 +60,6 @@ class PositionSerializer(serializers.ModelSerializer):
         fields = ["id", "run", "latitude", "longitude"]
 
     def validate_run(self, value):
-        print("run", value.status)
         if value.status != "in_progress":
             raise serializers.ValidationError("Забег не запущен или остановлен")
         return value

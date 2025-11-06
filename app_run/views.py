@@ -23,7 +23,7 @@ def runs_finished(self):
 # Добавяляем свойство для подсчета общего пробега
 @property
 def total_distance(self):
-    return self.Run.objects.filter(id=id, status="finished").aggregate(Sum("distance"))
+    return self.Run.objects.filter(id=id, status="finished")("distance").sum()
 
 
 User.add_to_class("runs_finished", runs_finished)
