@@ -129,7 +129,7 @@ class RunStopAPIView(APIView):
                 athlete=user, full_name="Сделай 10 Забегов!"
             ).exists()
             # челлендж 50 км
-            if total_distance >= 50 and not challenge_exists:
+            if total_distance >= 50:
                 try:
                     Challenge.objects.create(
                         athlete=user, full_name="Пробеги 50 километров!"
