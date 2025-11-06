@@ -23,7 +23,7 @@ def runs_finished(self):
 # Добавяляем свойство для подсчета общего пробега
 @property
 def total_distance(self):
-    return self.run_set.objects.filter(status="finished").aggregate(Sum("distance"))["distance__sum"] or 0
+    return self.run_set.filter(status="finished").aggregate(Sum("distance"))["distance__sum"] or 0
 
 
 User.add_to_class("runs_finished", runs_finished)
@@ -129,7 +129,7 @@ class RunStopAPIView(APIView):
                 athlete=user, full_name="Сделай 10 Забегов!"
             ).exists()
             # челлендж 50 км
-            if total_distance >= 50:
+            if user.total_distance >= 50:
                 try:
                     Challenge.objects.get_or_create(
                         athlete=user, full_name="Пробеги 50 километров!"
