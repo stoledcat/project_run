@@ -128,7 +128,7 @@ class RunStopAPIView(APIView):
             challenge_exists = Challenge.objects.filter(
                 athlete=user, full_name="Сделай 10 Забегов!"
             ).exists()
-
+            # челлендж 50 км
             if total_distance >= 50 and not challenge_exists:
                 try:
                     Challenge.objects.create(
@@ -139,7 +139,7 @@ class RunStopAPIView(APIView):
                         {"error": "Ошибка создания челленджа"},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     )
-            if runs_finished_count >= 10 and not challenge_exists and runs_finished_count < 50:
+            if runs_finished_count >= 10 and not challenge_exists:
                 try:
                     Challenge.objects.create(
                         athlete=user, full_name="Сделай 10 Забегов!"
