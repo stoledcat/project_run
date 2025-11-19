@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Challenge, Position, Run
+from .models import Challenge, CollectibleItem, Position, Run
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -73,3 +73,25 @@ class PositionSerializer(serializers.ModelSerializer):
         if not (-180.0 <= value <= 180.0):
             raise serializers.ValidationError("Недопустимая долгота")
         return value
+
+
+class CollectibleItemSerializer(serializers.ModelSerializer):
+    latitude = serializers.FloatField(min_value=-90.0, max_value=90.0)
+    longitude = serializers.FloatField(min_value=-180.0, max_value=180.0)
+
+    class Meta:
+        model = CollectibleItem
+        fields = ["uid", "latitude", "longitude", "url"]
+
+    def validate_uid(self, uid):
+        if not isinstance(uid, str) or len(uid) != 8:
+            raise serializers.ValidationError("Недопустимый UID")
+        return uid
+
+    def validate_url(self, url):
+        url_field = serializers.URLField()
+        try:
+            url = url_field.run_validation(url)
+        except serializers.ValidationError:
+            raise serializers.ValidationError("Недопустимый URL")
+        return url
